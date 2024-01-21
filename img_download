@@ -1,0 +1,65 @@
+import urllib.request
+import requests
+import hashlib
+import os.path
+import shutil
+from os import path
+import os
+
+
+# получим объект файла
+file1 = open("data.txt", "r")
+# False -> скрипт будет брать ссылки из файла и скачивать их в папку со скриптом изменив назавание
+# True -> скрипт будет создавать директории и копировать файлы из папки со скриптом в этим директории основываясь на файле с сылками 
+copy = False
+
+
+while True:
+	# считываем строку
+	link = file1.readline()
+
+	# прерываем цикл, если строка пустая
+	if not link:
+		break
+
+	dirs = link[20:].rstrip().split('/')
+	dirs = list(filter(None, dirs))
+
+	oldFileName = dirs[len(dirs)-1]
+
+
+
+	i = 1
+	folderPath = ''	
+	for folder in dirs:
+		if len(dirs)-1 < i:
+			folderPath = folderPath[:-1]
+			break
+		else:
+			folderPath = folderPath+folder+'/'
+
+		i += 1
+
+	picFormat = oldFileName.split('.')
+	picFormat = picFormat[len(picFormat)-1]
+
+	hash_object = hashlib.md5(folderPath.encode())
+	fileName = hash_object.hexdigest();
+
+
+	if copy == True:
+		try:
+			if not os.path.exists(folderPath):
+				# создаю директорию
+				os.makedirs(folderPath, exist_ok=True)
+				# делаю копию
+				shutil.copyfile(fileName+'.'+picFormat, folderPath+'/'+oldFileName)
+		except:
+			print('Такого файлна не обнаружено')
+	else:
+		# скачиваю
+		urllib.request.urlretrieve(link, fileName+'.'+picFormat)
+		print(fileName+'.'+picFormat)
+
+
+	# break
